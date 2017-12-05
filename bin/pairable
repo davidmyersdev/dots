@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+file="${BASH_SOURCE[0]}"
+
+while [[ -L "$file" ]]
+do
+  file=$(readlink "$file")
+done
+
+root="$(cd "$(dirname "$(dirname "$file")")" && pwd)"
+
+profile=$1
+profile_path="$root/profiles/$profile"
+
+# set the current profile if one is being used
+if [[ "$(readlink $(find ~ -maxdepth 1 -lname "$root/profiles/*" | head -n 1))" =~ $root/profiles/(.*)/.* ]]
+then
+  current=${BASH_REMATCH[1]}
+fi
+
+# only run if a profile was passed in and the profile exists
+if [ ! -z "$profile" ] && [ -d "$profile_path" ]
+then
+  # clear links from the previous profile
+  find ~ -maxdepth 1 -lname "$root/profiles/*" -delete
+
+  # show hidden files
+  shopt -s dotglob
+
+  echo ""
+  echo "Syncing dotfiles..."
+
+  # loop through all files in the profile directory
+  for file in $profile_path/*
+  do
+    # exit early if there are no files to link
+    if [[ "$file" == "$profile_path/*" ]]
+    then
+      break
+    fi
+
+    base=`basename ${file}`
+
+    if [ "$base" != '.git' ] && [ "$base" != '.gitignore' ]
+    then
+      # skip files that already exist in the $HOME directory (maybe remove files instead?)
+      if [ -f "${HOME}/${base}" ] || [ -d "${HOME}/${base}" ]
+      then
+          break
+      fi
+
+      # set up the symlinks
+      ln -s ${file} ${HOME}/${base}
+
+      echo "  $HOME/$base -> $profile_path/$base"
+    fi
+  done
+else
+  # list the available profiles
+  echo ''
+  echo 'Available profiles:'
+
+  for dir in $root/profiles/*
+  do
+    if [[ $dir == "$root/profiles/*" ]]
+    then
+      break
+    fi
+
+    base=`basename $dir`
+
+    echo " - $base $([ "$base" == "$current" ] && echo '(current)')"
+  done
+fi
