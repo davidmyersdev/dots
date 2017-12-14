@@ -9,14 +9,72 @@ done
 
 root="$(cd "$(dirname "$(dirname "$file")")" && pwd)"
 
-profile=$1
-profile_path="$root/profiles/$profile"
-
 # set the current profile if one is being used
 if [[ "$(readlink $(find ~ -maxdepth 1 -lname "$root/profiles/*" | head -n 1))" =~ $root/profiles/(.*)/.* ]]
 then
   current=${BASH_REMATCH[1]}
 fi
+
+exit_with_usage () {
+  # based on https://git.innova-partners.com/smerrill/_ping/blob/f167af374912a74c4140a34abe3ea9f6f835d722/_ping.sh#L16-L29
+  cat << USAGE
+$0 [-fhl] <profile>
+  -f  force removal of existing files in \$HOME directory
+  -h  show usage/help info
+  -l  list available (and current) profile(s)
+USAGE
+  exit 0
+}
+
+exit_with_profile_list () {
+  # list the available profiles
+  echo ''
+  echo 'Available profiles:'
+
+  for dir in $root/profiles/*
+  do
+    if [[ $dir == "$root/profiles/*" ]]
+    then
+      break
+    fi
+
+    base=`basename $dir`
+
+    echo " - $base $([ "$base" == "$current" ] && echo '(current)')"
+  done
+  exit 0
+}
+
+while getopts ':fhl' opt
+do
+  case $opt in
+    f)
+      force=true
+      ;;
+    h)
+      exit_with_usage
+      ;;
+    l)
+      exit_with_profile_list
+      ;;
+  esac
+done
+
+# clear options
+# see https://git.innova-partners.com/smerrill/_ping/blob/f167af374912a74c4140a34abe3ea9f6f835d722/_ping.sh#L84-L95
+n=1
+while [ $# -gt 0 ]; do
+  if [ $n -lt $OPTIND ]; then
+    let n=$n+1
+    shift
+  else
+    break
+  fi
+done
+
+
+profile=$1
+profile_path="$root/profiles/$profile"
 
 # only run if a profile was passed in and the profile exists
 if [ ! -z "$profile" ] && [ -d "$profile_path" ]
@@ -43,10 +101,17 @@ then
 
     if [ "$base" != '.git' ] && [ "$base" != '.gitignore' ]
     then
-      # skip files that already exist in the $HOME directory (maybe remove files instead?)
-      if [ -f "${HOME}/${base}" ] || [ -d "${HOME}/${base}" ]
+      # remove files that already exist in the $HOME directory
+      if [ -f "${HOME}/${base}" ] || [ -d "${HOME}/${base}" ] || [[ -L "$HOME/$base" ]]
       then
-          break
+        if [ ! -z $force ]
+        then
+          echo "  removing file (via -f): $base"
+          rm -r "$HOME/$base"
+        else
+          echo "  skipping file (use -f to force remove): $base"
+          continue
+        fi
       fi
 
       # set up the symlinks
@@ -56,19 +121,5 @@ then
     fi
   done
 else
-  # list the available profiles
-  echo ''
-  echo 'Available profiles:'
-
-  for dir in $root/profiles/*
-  do
-    if [[ $dir == "$root/profiles/*" ]]
-    then
-      break
-    fi
-
-    base=`basename $dir`
-
-    echo " - $base $([ "$base" == "$current" ] && echo '(current)')"
-  done
+  exit_with_usage
 fi
