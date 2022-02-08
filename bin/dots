@@ -23,6 +23,7 @@ purge_links() {
 exit_with_usage () {
   cat << USAGE
 $0 [-fhl] <profile>
+
   -f  Force removal of existing files in \$HOME directory
   -h  Show usage/help info
   -l  List available (and current) profile(s)
