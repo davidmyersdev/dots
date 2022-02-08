@@ -22,7 +22,7 @@ purge_links() {
 
 exit_with_usage () {
   cat << USAGE
-$0 [-fhl] <profile>
+$0 [-fhlp] <profile>
 
   -f  Force removal of existing files in \$HOME directory
   -h  Show usage/help info
