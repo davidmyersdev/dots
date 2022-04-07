@@ -9,10 +9,10 @@ done
 
 root="$(cd "$(dirname "$(dirname "$file")")" && pwd)"
 
-# set the current profile if one is being used
+# set the active profile if one is being used
 if [[ "$(readlink $(find ~ -maxdepth 1 -lname "$root/profiles/*" | head -n 1))" =~ $root/profiles/(.*)/.* ]]
 then
-  current=${BASH_REMATCH[1]}
+  active=${BASH_REMATCH[1]}
 fi
 
 purge_links() {
@@ -24,17 +24,16 @@ exit_with_usage () {
   cat << USAGE
 $0 [-fhlp] <profile>
 
-  -f  Force removal of existing files in \$HOME directory
-  -h  Show usage/help info
-  -l  List available (and current) profile(s)
-  -p  Purge links from any active profile
+  -f  Force removal of conflicting files in \$HOME directory
+  -h  Show usage/help information
+  -l  List available profiles
+  -p  Purge all symlinks created by this script
 USAGE
   exit 0
 }
 
 exit_with_profile_list () {
   # list the available profiles
-  echo ""
   echo "Available profiles:"
 
   for dir in $root/profiles/*
@@ -46,7 +45,7 @@ exit_with_profile_list () {
 
     base=`basename $dir`
 
-    echo " - $base $([ "$base" == "$current" ] && echo '(current)')"
+    echo " - $base $([ "$base" == "$active" ] && echo '(active)')"
   done
 
   echo ""

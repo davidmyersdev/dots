@@ -5,12 +5,12 @@ Manage your dotfiles with ease, and pair with a parter if you want to.
 ## Installation
 
 ```bash
-dots [-fhl] <profile>
+dots [-fhlp] <profile>
 
-  -f  Force removal of existing files in \$HOME directory
-  -h  Show usage/help info
-  -l  List available (and current) profile(s)
-  -p  Purge links from any active profile
+  -f  Force removal of conflicting files in $HOME directory
+  -h  Show usage/help information
+  -l  List available profiles
+  -p  Purge all symlinks created by this script
 ```
 
 To get started, download this project.
@@ -19,7 +19,7 @@ To get started, download this project.
 git clone https://github.com/voraciousdev/dots && cd dots
 ```
 
-Next, clone your dotfiles into the `profiles` directory. It helps to give the project an alias too, because profiles are named from the directory.
+Next, clone your dotfiles into the `profiles` directory. It helps to give the project an alias, because profiles are named from the directory.
 
 ```bash
 git clone https://github.com/voraciousdev/dotfiles ./profiles/david
@@ -27,19 +27,19 @@ git clone https://github.com/voraciousdev/dotfiles ./profiles/david
 
 ## Usage
 
-You can sync your dotfiles to `$HOME` with the `dots` command.
+Symlink your dotfiles to `$HOME` with the `dots` command.
 
 ```bash
 ./bin/dots david
 ```
 
-To list available profiles, use the `-l` flag. An active profile will be labeled as `current` in the list.
+To list available profiles, use the `-l` flag. An active profile will be labeled as `active` in the list.
 
 ```bash
 $ dots -l
 
 Available profiles:
- - david (current)
+ - david (active)
 ```
 
 ## Extras
