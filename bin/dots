@@ -97,6 +97,13 @@ then
   echo ""
   echo "Syncing dotfiles..."
 
+  file="$profile_path"
+  base=".dotfiles"
+
+  # set up the symlinks
+  ln -s ${file} ${HOME}/${base}
+  echo "  $HOME/$base -> $file"
+
   # loop through all files in the profile directory
   for file in $profile_path/*
   do
